@@ -198,6 +198,7 @@ class Word(TgInterval):
         return base_dict
 @dataclass
 class Utterance(TgInterval):
+    utt_id: str = ""
     words: List[Word] = field(default_factory=list)
         
     @classmethod
@@ -257,6 +258,7 @@ class Utterance(TgInterval):
     def to_dict(self):
         base_dict = super().to_dict()
         base_dict.update({
+            "utt_id": self.utt_id,
             "words": [x.to_dict() for x in self.words],
             "type": "Utterance"
         })
