@@ -121,6 +121,10 @@ class Character(TgInterval):
         for phone_x in self.phones:
             yield phone_x
             
+    def build_parent(self):
+        for phone_x in self.phones:
+            setattr(phone_x, "parent", self)
+
     def validate(self):
         if not self.phones: return True
         if self.start != self.phones[0].start or \
@@ -177,6 +181,11 @@ class Word(TgInterval):
         for char_x in self.characters:
             yield from char_x.iter_phones()
     
+    def build_parent(self):
+        for char_x in self.characters:
+            setattr(char_x, "parent", self)
+            char_x.build_parent()
+    
     def validate(self):
         if not self.characters: return True
         if self.start != self.characters[0].start or \
@@ -202,10 +211,15 @@ class Utterance(TgInterval):
     words: List[Word] = field(default_factory=list)
         
     @classmethod
-    def from_words(cls, words: List[Word]):
+    def from_words(
+            cls, 
+            words: List[Word], 
+            utt_id=""
+        ):
         inst = cls(words[0].start, 
                    words[-1].end, 
                    " ".join(x.label for x in words))
+        inst.utt_id = utt_id
         inst.words = words
         return inst
 
@@ -240,6 +254,11 @@ class Utterance(TgInterval):
         for word_x in self.words:
             yield from word_x.iter_phones()
     
+    def build_parent(self):
+        for word_x in self.words:
+            setattr(word_x, "parent", self)
+            word_x.build_parent()
+
     def append_word(self, word):
         self.words.append(word)
         

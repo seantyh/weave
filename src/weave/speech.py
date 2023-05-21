@@ -51,6 +51,17 @@ class Speech:
     def n_words(self):
         return sum(x.n_words() for x in self.utterances)
     
+    def build_parent(self):
+        for utt_x in self.utterances:
+            setattr(self, "parent", self)
+            utt_x.build_parent()
+    
+    def find_words(self, word):
+        for utt_x in self.utterances:
+            for word_x in utt_x.words:
+                if word_x.label == word:
+                    yield utt_x, word_x
+    
     def to_textgrid(
             self, 
             tg_path, 
