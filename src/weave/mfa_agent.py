@@ -118,8 +118,8 @@ class MfaAgent:
     def get_phoneid(self, phone):
        return self.phone_table.index(phone)
 
-    def compute_gmm(self, utt_id):
-      gmmlik = compute_gmmlik(utt_id, self.ali_dir, self.data_dir)
+    def compute_gmm(self, utt_id, return_features=False):
+      gmmlik, feat_mat = compute_gmmlik(utt_id, self.ali_dir, self.data_dir)
       phone2pdfid = self.phone2pdfid
       gmmprob = np.zeros((gmmlik.shape[0], len(self.phone_table)))
       for phone_idx, phone_x in enumerate(self.phone_table):
@@ -130,5 +130,8 @@ class MfaAgent:
         gmmprob[:, phone_idx] = logsumexp(gmmlik[:, pdfids_x], axis=1)
       lgmmprob = gmmprob - logsumexp(gmmprob, axis=1, keepdims=True)
 
-      return lgmmprob
+      if return_features:
+        return lgmmprob, feat_mat
+      else:
+        return lgmmprob
 

@@ -11,12 +11,18 @@ def compute_gmmlik(
       utt_id: str, 
       ali_dir: Path, 
       corpus_dir: Path
-    ) -> np.ndarray:
+    ) -> Tuple[np.ndarray, np.ndarray]:
   trfeats, split_id = call_transform_feature(utt_id, ali_dir, corpus_dir)
   tok, gmmlik = call_gmmlik(trfeats, split_id, ali_dir)
   gmmlik = cast(np.ndarray, gmmlik)
+  
+  # extract feature matrix from trfeats
+  trfeats_f = BytesIO(trfeats)
+  read_token(trfeats_f)
+  feat_mat = read_kaldi(trfeats_f)
+  feat_mat = cast(np.ndarray, feat_mat)
   assert tok == utt_id, "utt_id does not match"
-  return gmmlik
+  return gmmlik, feat_mat
 
 def call_transform_feature(utt_id, ali_dir, corpus_dir):
   
