@@ -37,6 +37,13 @@ def call_transform_feature(utt_id, ali_dir, corpus_dir):
   assert split_id, "split_id is not found in feat.*.scp"
   split_id = split_id[0]
 
+# ark,s,cs:splice-feats --left-context=3 --right-context=3 
+# scp,s,cs:"/home/sean/Documents/MFA/xianzai/xianzai/split3/feats.1.1.scp" ark:- | 
+# transform-feats "/home/sean/Documents/MFA/xianzai/alignment/lda.mat" ark:- ark:- | 
+# transform-feats --utt2spk=ark:"MFA/xianzai/xianzai/split3/utt2spk.1.1.scp" 
+# scp:"/home/sean/Documents/MFA/xianzai/xianzai/split3/trans.1.1.scp" ark:- ark:- |
+
+
   cmd = subprocess.Popen([
       "splice-feats",
       "--left-context=3", "--right-context=3",
@@ -48,9 +55,15 @@ def call_transform_feature(utt_id, ali_dir, corpus_dir):
       str(ali_dir / "lda.mat"),
       "ark:-", "ark:-"],
       stdin=cmd.stdout,
-      stdout=subprocess.PIPE,
-  )
-  tr_feats = cmd2.stdout.read() # type:ignore
+      stdout=subprocess.PIPE)
+  cmd3 = subprocess.Popen([
+      "transform-feats",
+      "--utt2spk=ark:" + str(corpus_dir / f"split3/utt2spk.1.{split_id}.scp"),
+      "scp:" + str(corpus_dir/f"split3/trans.1.{split_id}.scp"), 
+      "ark:-", "ark:-"],
+      stdin=cmd2.stdout,
+      stdout=subprocess.PIPE)
+  tr_feats = cmd3.stdout.read() # type:ignore
 
   # clean up
   feat_path.unlink()
